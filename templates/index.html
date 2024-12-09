@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 헬스케어 챗봇</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #fee601;
+            --secondary-color: #48dbfb;
+            --background-color: #fff;
+            --text-color: #333;
+            --chat-bubble-user: #fee601;
+            --chat-bubble-bot: #ffffff;
+        }
+
+        body {
+            background-color: var(--background-color);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+        }
+        .navbar {
+            background-color: white !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .navbar-brand {
+            color: #2a60ff !important;
+            font-weight: bold;
+        }
+
+        .nav-link {
+            color: var(--text-color) !important;
+            transition: color 0.3s ease;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: #2a60ff !important;
+        }
+
+        .chat-container {
+            background-color: #acbfd2;
+            height: 682px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .chat-message {
+            color: #000000;
+            max-width: 60%;
+            padding: 10px 15px;
+            margin: 8px;
+            border-radius: 15px;
+            word-break: break-word;
+        }
+
+        .chat-message.user {
+            background-color: var(--chat-bubble-user);
+            margin-left: auto;
+            float: right;
+            border-top-right-radius: 5px;
+            text-align: left;
+        }
+        .chat-message.bot {
+            background-color: var(--chat-bubble-bot);
+            margin-right: auto;
+            border-top-left-radius: 5px;
+        }
+
+        .chat-input-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 10px 15px;
+            background-color: #fff;
+            border-top: 1px solid #ddd;
+        }
+
+        .chat-input-form {
+            display: flex;
+            gap: 10px;
+            max-width: 850px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+
+        .chat-input-form input {
+            border-radius: 20px;
+            padding: 10px 15px;
+            flex: 1;
+            background-color: #efefef;
+        }
+
+        .btn-send {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--primary-color);
+            color: #333;
+        }
+</style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">AI 헬스케어</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">홈</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/location_selection">병원 검색</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/drug_information">의약품 정보</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container my-4">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-body"style="background-color: #acbfd2;">
+                        <h5 class="card-title text-center mb-4">AI 헬스케어 챗봇</h5>
+                        <div class="chat-container">
+                            <div class="chat-content" id="chat-box">
+                                <!-- 대화 내용이 이곳에 추가됩니다 -->
+                            </div>
+                            <div class="chat-input-container">
+                                <form id="chat-form" class="chat-input-form">
+                                    <input type="text" id="message" name="message" class="form-control" placeholder="메시지 입력" required>
+                                    <button type="submit" class="btn btn-send">
+                                        <span class="send-text">🡹</span>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById("chat-form").addEventListener("submit", function(event) {
+            event.preventDefault();
+            const message = document.getElementById("message").value.trim();
+            if (message === "") return;
+
+            const chatBox = document.getElementById("chat-box");
+            const userMessage = document.createElement("div");
+            userMessage.className = "chat-message user";
+            userMessage.innerText = message;
+            chatBox.appendChild(userMessage);
+            document.getElementById("message").value = "";
+
+            fetch("/chat", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ message: message })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.redirect) {
+                    window.location.href = data.redirect;
+                } else {
+                    const botMessage = document.createElement("div");
+                    botMessage.className = "chat-message bot";
+                    botMessage.innerText = data.response;
+                    chatBox.appendChild(botMessage);
+                    chatBox.scrollTop = chatBox.scrollHeight;
+                }
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                const errorMessage = document.createElement("div");
+                errorMessage.className = "chat-message bot text-danger";
+                errorMessage.innerText = "오류가 발생했습니다. 다시 시도해 주세요.";
+                chatBox.appendChild(errorMessage);
+            });
+        });
+    </script>
+</body>
+</html>

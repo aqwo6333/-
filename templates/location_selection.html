@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>병원 지역 선택</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+    <style>
+        :root {
+            --primary-color: #2a60ff;
+            --button-color: #2a60ff;
+            --button-hover: #1e4cd6;
+            --selected-color: #1e4cd6;
+        }
+        .body {
+            background-color: #acbfd2;
+        }
+        .navbar-brand {
+            color: var(--primary-color) !important;
+            font-weight: bold;
+        }
+
+        .nav-link {
+            color: #333 !important;
+            transition: color 0.3s ease;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: var(--primary-color) !important;
+        }
+
+        .section {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            overflow-y: auto;
+            height: 600px;
+        }
+
+        .city-buttons, .district-buttons {
+            display: grid;
+            gap: 12px;
+        }
+
+        .city-buttons {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .district-buttons {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        .button {
+            padding: 12px;
+            font-size: 14px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            background-color: var(--button-color);
+            color: white;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .button.selected {
+            background-color: var(--selected-color);
+            transform: scale(0.98);
+        }
+
+        .button:hover {
+            background-color: var(--button-hover);
+            transform: translateY(-2px);
+        }
+
+        .dropdown {
+            margin-top: 10px;
+            width: 100%;
+            padding: 12px;
+            font-size: 14px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+
+        #search-button {
+            margin-top: 20px;
+            width: 100%;
+            background-color: var(--button-color);
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        #search-button:hover {
+            background-color: var(--button-hover);
+        }
+
+        .hospital-item {
+            padding: 20px;
+            border-radius: 8px;
+            background-color: #f8f9fa;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .hospital-item:hover {
+            transform: translateX(5px);
+            background-color: #f0f4ff;
+        }
+
+        .hospital-name {
+            color: var(--primary-color);
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .hospital-address {
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .hospital-phone {
+            color: #888;
+            font-size: 14px;
+        }
+
+        .pagination-buttons {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .pagination-buttons button {
+            padding: 8px 20px;
+            border: none;
+            border-radius: 6px;
+            background-color: var(--button-color);
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .pagination-buttons button:hover {
+            background-color: var(--button-hover);
+        }
+
+        .pagination-buttons button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">AI 헬스케어</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="/">홈</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.path == '/location_selection' %}active{% endif %}" href="/location_selection">병원 검색</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.path == '/drug_information' %}active{% endif %}" href="/drug_information">의약품 정보</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container my-4">
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <div class="section">
+                    <h5 class="mb-3">도시 선택</h5>
+                    <div id="city-buttons" class="city-buttons">
+                        <!-- 도시 버튼이 동적으로 추가됩니다 -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-4">
+                <div class="section">
+                    <h5 class="mb-3">시/군/구 선택</h5>
+                    <div id="district-buttons" class="district-buttons">
+                        <!-- 지역구 버튼이 동적으로 추가됩니다 -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-4">
+                <div class="section">
+                    <h5 class="mb-3">진료과목 선택</h5>
+                    <select id="department-dropdown" name="selected_department" class="form-select">
+                        {% for department, code in all_departments.items() %}
+                            <option value="{{ department }}">{{ department }}</option>
+                        {% endfor %}
+                    </select>
+                    <button id="search-button" class="btn btn-primary">병원 검색</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="result" class="section mt-4">
+            <h5 class="mb-4">병원 목록</h5>
+            <div id="hospital-list"></div>
+            <div class="pagination-buttons">
+                <button id="prev-button" class="btn btn-secondary">이전</button>
+                <button id="next-button" class="btn btn-secondary">다음</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous"></script>
+    <script>
+        const districtData = {
+            "서울특별시": ["종로구", "중구", "용산구", "성동구", "광진구", "동대문구", "중랑구", "성북구",
+                         "강북구", "도봉구", "노원구", "은평구", "서대문구", "마포구", "양천구", "강서구", 
+                         "구로구", "금천구", "영등포구", "동작구", "관악구", "서초구", "강남구", "송파구", "강동구"],
+            "부산광역시": ["중구", "서구", "동구", "영도구", "부산진구", "동래구", "남구", "북구", "해운대구", 
+                        "사하구", "금정구", "강서구", "연제구", "수영구", "사상구", "기장군"],
+            "대구광역시": ["중구", "동구", "서구", "남구", "북구", "수성구", "달서구", "달성군", "군위군"],
+            "인천광역시": ["중구", "동구", "미추홀구", "연수구", "남동구", "부평구", "계양구", "서구", "강화군", "옹진군"],
+            "광주광역시": ["동구", "서구", "남구", "북구", "광산구"],
+            "대전광역시": ["동구", "중구", "서구", "유성구", "대덕구"],
+            "울산광역시": ["중구", "남구", "동구", "북구", "울주군"],
+            "세종특별자치시": ["세종특별자치시"],
+            "경기도": ["수원시", "용인시", "고양시", "화성시", "성남시", "부천시", "남양주시", "안산시", "평택시", 
+                    "안양시", "시흥시", "파주시", "김포시", "의정부시", "광주시", "하남시", "광명시", "군포시", "양주시", 
+                    "오산시", "이천시", "안성시", "구리시", "의왕시", "포천시", "양평군", "여주시", "동두천시", "과천시", "가평군", "연천군"],
+            "강원특별자치도": ["춘천시", "원주시", "강릉시", "동해시", "태백시", "속초시", "삼척시", "홍천군", "횡성군", 
+                            "영월군", "평창군", "정선군", "철원군", "화천군", "양구군", "인제군", "고성군", "양양군"],
+            "충청북도": ["청주시", "충주시", "제천시", "보은군", "옥천군", "영동군", "증평군", "진천군", "괴산군", "음성군", "단양군"],
+            "충청남도": ["천안시", "공주시", "보령시", "아산시", "서산시", "논산시", "계룡시", "당진시", "금산군", "부여군", "서천군", 
+                        "청양군", "홍성군", "예산군", "태안군"],
+            "전북특별자치도": ["전주시", "군산시", "익산시", "정읍시", "남원시", "김제시", "완주군", "진안군", "무주군", "장수군", 
+                            "임실군", "순창군", "고창군", "부안군"],
+            "전라남도": ["목포시", "여수시", "순천시", "나주시", "광양시", "담양군", "곡성군", "구례군", "고흥군", "보성군", "화순군", 
+                        "장흥군", "강진군", "해남군", "영암군", "무안군", "함평군", "영광군", "장성군", "완도군", "진도군", "신안군"],
+            "경상북도": ["포항시", "경주시", "김천시", "안동시", "구미시", "영주시", "영천시", "상주시", "문경시", "경산시", "의성군", 
+                        "청송군", "영양군", "영덕군", "청도군", "고령군", "성주군", "칠곡군", "예천군", "봉화군", "울진군", "울릉군"],
+            "경상남도": ["창원시", "진주시", "통영시", "사천시", "김해시", "밀양시", "거제시", "양산시", "의령군", "함안군", "창녕군", 
+                        "고성군", "남해군", "하동군", "산청군", "함양군", "거창군", "합천군"],
+            "제주특별자치도": ["제주시", "서귀포시"]
+        };
+        let selectedCity = "";
+        let selectedDistrict = "";
+        let currentPage = 1;
+
+        const cityButtons = document.getElementById("city-buttons");
+        Object.keys(districtData).forEach(city => {
+            const button = document.createElement("button");
+            button.classList.add("button");
+            button.textContent = city;
+            button.onclick = () => {
+                selectedCity = city;
+                document.querySelectorAll("#city-buttons .button").forEach(btn => btn.classList.remove("selected"));
+                button.classList.add("selected");
+                showDistrictButtons(city);
+            };
+            cityButtons.appendChild(button);
+        });
+
+        const showDistrictButtons = (city) => {
+            const districtButtons = document.getElementById("district-buttons");
+            districtButtons.innerHTML = "";
+            districtData[city].forEach(district => {
+                const button = document.createElement("button");
+                button.classList.add("button");
+                button.textContent = district;
+                button.onclick = () => {
+                    selectedDistrict = district;
+                    document.querySelectorAll("#district-buttons .button").forEach(btn => btn.classList.remove("selected"));
+                    button.classList.add("selected");
+                };
+                districtButtons.appendChild(button);
+            });
+        };
+
+        const formatHospitalData = (hospitalString) => {
+            const hospitals = hospitalString.split('\n').filter(line => line.trim() !== '');
+            return hospitals.map(hospital => {
+                const [name, location] = hospital.split(', 주소: ');
+                const [address, phone] = location ? location.split(', ☎: ') : ['', ''];
+                return {
+                    name: name.replace('병원명: ', ''),
+                    address: address,
+                    phone: phone
+                };
+            });
+        };
+
+        const fetchHospitals = () => {
+            const department = document.getElementById("department-dropdown").value;
+            if (!selectedCity || !selectedDistrict || !department) {
+                alert("모든 항목을 선택해주세요!");
+                return;
+            }
+
+            fetch("/recommend", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    city: selectedCity,
+                    district: selectedDistrict,
+                    medical_department: department,
+                    pageNo: currentPage
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                const resultDiv = document.getElementById("hospital-list");
+                const hospitals = formatHospitalData(data.response);
+                const hospitalListHTML = hospitals.map(hospital => `
+                    <div class="hospital-item">
+                        <div class="hospital-name">${hospital.name}</div>
+                        <div class="hospital-address">📍 ${hospital.address}</div>
+                        <div class="hospital-phone">📞 ${hospital.phone}</div>
+                    </div>
+                `).join('');
+                resultDiv.innerHTML = hospitalListHTML;
+
+                // 페이지 버튼 상태 업데이트
+                document.getElementById("prev-button").disabled = currentPage === 1;
+                document.getElementById("next-button").disabled = hospitals.length === 0;
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                alert("병원 검색 중 오류가 발생했습니다.");
+            });
+        };
+
+        document.getElementById("search-button").addEventListener("click", () => {
+            currentPage = 1;
+            fetchHospitals();
+        });
+
+        document.getElementById("prev-button").addEventListener("click", () => {
+            if (currentPage > 1) {
+                currentPage--;
+                fetchHospitals();
+            }
+        });
+
+        document.getElementById("next-button").addEventListener("click", () => {
+            currentPage++;
+            fetchHospitals();
+        });
+        </script>
+    </body>
+</html>
