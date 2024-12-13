@@ -1,7 +1,7 @@
 # 📌 프로젝트 이름
 **AIHC - AI를 활용한 건강 챗봇**
 
-![로고](static/logo.png) 
+![로고](path/logo360.png) 
 ---
 
 ## 🌟 주요 기능
