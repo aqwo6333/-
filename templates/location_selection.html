@@ -3,222 +3,422 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>병원 지역 선택</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
     <style>
-        :root {
-            --primary-color: #2a60ff;
-            --button-color: #2a60ff;
-            --button-hover: #1e4cd6;
-            --selected-color: #1e4cd6;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
         }
-        .body {
-            background-color: #acbfd2;
+
+        body {
+            background-color: #ffffff;
+            max-width: 1920px;
+            margin: 0 auto;
         }
-        .navbar-brand {
-            color: var(--primary-color) !important;
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 21px 430px;
+            background-color: white;
+            max-width: 1920px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            color: #0052CC;
+            width: 138px;
+            height: 69px;
             font-weight: bold;
         }
 
-        .nav-link {
-            color: #333 !important;
-            transition: color 0.3s ease;
+        .nav-menu {
+            display: flex;
+            gap: 30px;
         }
 
-        .nav-link:hover, .nav-link.active {
-            color: var(--primary-color) !important;
+        .nav-menu a {
+            text-decoration: none;
+            color: #333;
+            font-size: 18px;
+            font-weight: 500;
+            padding: 0 30px;
+            position: relative;
+            text-align: center;
         }
 
-        .section {
-            background-color: #ffffff;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-            overflow-y: auto;
+        .nav-menu a::after {
+            content: "";
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%) scaleX(0);
+            width: 100px;
+            height: 3px;
+            background-color: #2a60ff;
+            transition: transform 0.3s ease;
+        }
+
+        .nav-menu a:hover::after {
+            transform: translateX(-50%) scaleX(1);
+        }
+
+        .gray-bar {
+            background: #efefef;
+            height: 1px;
+            position: relative;
+        }
+        .blue-bar {
+            background: #2a60ff;
+            border-radius: 0px 180.5px 180.5px 0px;
+            height: 4px;
+            width: 446px;
+            margin-bottom: 20px;
+        }
+        .title-section {
+            max-width: 1040px;
+            margin: 0 auto;
+        }
+        .footer {
+            background: #f6f6f6;
+            padding: 20px 120px;
+            margin-top: 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #666;
+            font-size: 14px;
+            position: relative;
+        }
+        .footer-logo {
+            flex-shrink: 0;
+        }
+        .footer-info {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: left;
+            line-height: 1.5;
+        }
+        .blue-box {
+            background: #eff3ff;
+            border-radius: 5px;
             height: 600px;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
-        .city-buttons, .district-buttons {
+        .mid-box {
+            display: flex;
+            gap: 10px;
+            width: 1040px;
+            justify-content: space-between;
+        }
+        .small-box1, .small-box2, .small-box3 {
+            background: #f6f8ff;
+            border-radius: 5px;
+            height: 550px; 
+            align-items: top;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            gap: 20px;
+        }
+        .button-grid {
             display: grid;
-            gap: 12px;
+            gap: 10px;
+            padding: 10px;
+            margin-top: 10px;
         }
 
-        .city-buttons {
-            grid-template-columns: repeat(2, 1fr);
-        }
-
-        .district-buttons {
+        .city-grid, .district-grid, .department-grid {
             grid-template-columns: repeat(3, 1fr);
         }
 
-        .button {
-            padding: 12px;
-            font-size: 14px;
-            border: none;
-            border-radius: 8px;
+        .list-item {
+            padding: 5px 0px;
             cursor: pointer;
-            background-color: var(--button-color);
-            color: white;
             text-align: center;
-            transition: all 0.3s ease;
-        }
-
-        .button.selected {
-            background-color: var(--selected-color);
-            transform: scale(0.98);
-        }
-
-        .button:hover {
-            background-color: var(--button-hover);
-            transform: translateY(-2px);
-        }
-
-        .dropdown {
-            margin-top: 10px;
-            width: 100%;
-            padding: 12px;
+            transition: all 0.2s;
             font-size: 14px;
-            border-radius: 8px;
-            border: 1px solid #ddd;
-        }
-
-        #search-button {
-            margin-top: 20px;
-            width: 100%;
-            background-color: var(--button-color);
+            color: #333;
+            background: none;
             border: none;
-            padding: 12px;
-            border-radius: 8px;
-            transition: all 0.3s ease;
+            border-radius: 4px;
         }
 
-        #search-button:hover {
-            background-color: var(--button-hover);
+        .list-item:hover {
+            color: #2a60ff;
+            background-color: rgba(42, 96, 255, 0.1);
+        }
+
+        .list-item.selected {
+            color: #2a60ff;
+            font-weight: 500;
+            background-color: rgba(42, 96, 255, 0.1);
+        }
+
+        /* 스크롤바 스타일링 */
+        .small-box1::-webkit-scrollbar,
+        .small-box2::-webkit-scrollbar,
+        .small-box3::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .small-box1::-webkit-scrollbar-track,
+        .small-box2::-webkit-scrollbar-track,
+        .small-box3::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        .small-box1::-webkit-scrollbar-thumb,
+        .small-box2::-webkit-scrollbar-thumb,
+        .small-box3::-webkit-scrollbar-thumb {
+            background: #2a60ff;
+            border-radius: 2px;
+        }
+
+        
+        .group-706 {
+            position: relative;
+            width: 340px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: #ffffff;
+            border-radius: 20.5px;
+            box-shadow: 0px 4px 6px 0px rgba(0, 0, 0, 0.1);
+            padding: 0 10px; 
+        }
+
+        .rectangle-880 {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #ffffff;
+            border-radius: 10px;
+        }
+
+        .div {
+            color: #8c8c8c;
+            font-size: 16px;
+            z-index: 1;
+            margin-left: 15px;
+        }
+
+        .rectangle-888 {
+            background: #ffffff;
+            border-radius: 90%;
+            border: 0.7px solid #c6c6c6;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1;
+        }
+
+        .vector {
+            width: 12px;
+            height: 12px;
+        }
+        .location-select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+            margin-top: 10px;
+            font-size: 16px;
+        }
+
+        .search-button {
+            display: block;
+            margin: 20px auto;
+            padding: 12px 40px;
+            background-color: #2a60ff;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .search-button:hover {
+            background-color: #1a50ef;
+        }
+
+        .result-container {
+            max-width: 1040px;
+            margin: 20px auto;
+            padding: 20px;
         }
 
         .hospital-item {
-            padding: 20px;
-            border-radius: 8px;
-            background-color: #f8f9fa;
-            margin-bottom: 15px;
-            transition: all 0.3s ease;
+            background: white;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-
-        .hospital-item:hover {
-            transform: translateX(5px);
-            background-color: #f0f4ff;
-        }
-
-        .hospital-name {
-            color: var(--primary-color);
-            font-size: 18px;
-            font-weight: bold;
+        .hospital-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 8px;
         }
 
-        .hospital-address {
-            color: #666;
-            margin-bottom: 5px;
+        .hospital-name {
+            font-size: 19px;  /* 기존보다 5px 큰 크기 */
+            font-weight: 500;
+            color: #2A60FF;
         }
 
-        .hospital-phone {
-            color: #888;
+        .hospital-time {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .hospital-address, .hospital-phone {
+            color: #666;
+            margin-bottom: 4px;
             font-size: 14px;
         }
 
-        .pagination-buttons {
-            margin-top: 20px;
+        .pagination {
             display: flex;
             justify-content: center;
             gap: 10px;
+            margin-top: 20px;
         }
 
-        .pagination-buttons button {
+        .pagination button {
             padding: 8px 20px;
-            border: none;
-            border-radius: 6px;
-            background-color: var(--button-color);
-            color: white;
-            transition: all 0.3s ease;
+            border: 1px solid #2a60ff;
+            background: white;
+            color: #2a60ff;
+            border-radius: 5px;
+            cursor: pointer;
         }
 
-        .pagination-buttons button:hover {
-            background-color: var(--button-hover);
-        }
-
-        .pagination-buttons button:disabled {
-            background-color: #ccc;
+        .pagination button:disabled {
+            border-color: #ccc;
+            color: #ccc;
             cursor: not-allowed;
+        }
+
+        /* 검색 결과가 있을 때 스크롤 가능한 컨테이너 */
+        #hospital-list {
+            max-height: 600px;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        /* 스크롤바 스타일링 */
+        #hospital-list::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        #hospital-list::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        #hospital-list::-webkit-scrollbar-thumb {
+            background: #2a60ff;
+            border-radius: 4px;
+        }
+
+        #hospital-list::-webkit-scrollbar-thumb:hover {
+            background: #1a50ef;
+        }
+        .rectangle-888.checked {
+            border-color: #2A60FF;
+        }
+
+        .rectangle-888.checked img {
+            filter: invert(37%) sepia(74%) saturate(1045%) hue-rotate(206deg) brightness(101%) contrast(101%);
         }
     </style>
 </head>
-<body class="bg-light">
-    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="/">AI 헬스케어</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav">
-                    <li class="nav-item">
-                        <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="/">홈</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {% if request.path == '/location_selection' %}active{% endif %}" href="/location_selection">병원 검색</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {% if request.path == '/drug_information' %}active{% endif %}" href="/drug_information">의약품 정보</a>
-                    </li>
-                </ul>
-            </div>
+<body>
+    <header class="header">
+        <div class="logo">
+            <a href="/">
+                <img src="static/logo.png" alt="AI 헬스케어 로고" style="height: 69px;">
+            </a>
         </div>
-    </nav>
+        <nav class="nav-menu">
+            <a href="/introduction">AIHC소개</a>
+            <a href="/location_selection">병원 찾기</a>
+            <a href="/drug_information">의약품 정보</a>
+        </nav>
+    </header>
+    <div class="gray-bar"></div>
+    <div style="height: 90px;"></div>
+    <section class="title-section">
+        <h2 class="service-title">병원을 검색해보세요</h2>
+        <div style="height: 10px;"></div>
+        <div class="blue-bar"></div>
+        <div style="height: 40px;"></div>
+    </section>
 
-    <div class="container my-4">
-        <div class="row">
-            <div class="col-md-4 mb-4">
-                <div class="section">
-                    <h5 class="mb-3">도시 선택</h5>
-                    <div id="city-buttons" class="city-buttons">
-                        <!-- 도시 버튼이 동적으로 추가됩니다 -->
+    <div class="blue-box">
+        <div class="mid-box">
+            <div class="small-box1">
+                <div class="group-706">
+                    <div class="rectangle-880"></div>
+                    <div class="div" id="city-label">도시 선택</div>
+                    <div class="rectangle-888">
+                        <img class="vector" src="static/check.png" alt="check icon" />
                     </div>
                 </div>
             </div>
-
-            <div class="col-md-4 mb-4">
-                <div class="section">
-                    <h5 class="mb-3">시/군/구 선택</h5>
-                    <div id="district-buttons" class="district-buttons">
-                        <!-- 지역구 버튼이 동적으로 추가됩니다 -->
+    
+            <div class="small-box2">
+                <div class="group-706">
+                    <div class="rectangle-880"></div>
+                    <div class="div" id="district-label">시/군/구 선택</div>
+                    <div class="rectangle-888">
+                        <img class="vector" src="static/check.png" alt="check icon" />
                     </div>
                 </div>
             </div>
-
-            <div class="col-md-4 mb-4">
-                <div class="section">
-                    <h5 class="mb-3">진료과목 선택</h5>
-                    <select id="department-dropdown" name="selected_department" class="form-select">
-                        {% for department, code in all_departments.items() %}
-                            <option value="{{ department }}">{{ department }}</option>
-                        {% endfor %}
-                    </select>
-                    <button id="search-button" class="btn btn-primary">병원 검색</button>
+    
+            <div class="small-box3">
+                <div class="group-706">
+                    <div class="rectangle-880"></div>
+                    <div class="div" id="department-label">진료과목 선택</div>
+                    <div class="rectangle-888">
+                        <img class="vector" src="static/check.png" alt="check icon" />
+                    </div>
                 </div>
-            </div>
-        </div>
-
-        <div id="result" class="section mt-4">
-            <h5 class="mb-4">병원 목록</h5>
-            <div id="hospital-list"></div>
-            <div class="pagination-buttons">
-                <button id="prev-button" class="btn btn-secondary">이전</button>
-                <button id="next-button" class="btn btn-secondary">다음</button>
             </div>
         </div>
     </div>
+    <div id="result-container" class="result-container">
+        <div id="hospital-list"></div>
+    </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous"></script>
+    <footer class="footer">
+        <div class="footer-logo">
+            <a href="/">
+                <img src="static/logo.png" alt="AI 헬스케어 로고" style="height: 69px;">
+            </a>
+        </div>
+        <div class="footer-info">
+            <p>Projecter : 여성원</p>
+            <p>Project_name : AI 헬스케어 &emsp; &emsp; E-mail : aqwo6333@naver.com &emsp; &emsp; PH : 010-3807-7762 &emsp; &emsp; By.2024</p>
+        </div>
+    </footer>
     <script>
         const districtData = {
             "서울특별시": ["종로구", "중구", "용산구", "성동구", "광진구", "동대문구", "중랑구", "성북구",
@@ -250,66 +450,41 @@
                         "고성군", "남해군", "하동군", "산청군", "함양군", "거창군", "합천군"],
             "제주특별자치도": ["제주시", "서귀포시"]
         };
+        const DEPARTMENT_CODE_MAP = {{ departments|tojson|safe }};
         let selectedCity = "";
         let selectedDistrict = "";
+        let selectedDepartment = "";
         let currentPage = 1;
 
-        const cityButtons = document.getElementById("city-buttons");
-        Object.keys(districtData).forEach(city => {
-            const button = document.createElement("button");
-            button.classList.add("button");
-            button.textContent = city;
-            button.onclick = () => {
-                selectedCity = city;
-                document.querySelectorAll("#city-buttons .button").forEach(btn => btn.classList.remove("selected"));
-                button.classList.add("selected");
-                showDistrictButtons(city);
-            };
-            cityButtons.appendChild(button);
-        });
-
-        const showDistrictButtons = (city) => {
-            const districtButtons = document.getElementById("district-buttons");
-            districtButtons.innerHTML = "";
-            districtData[city].forEach(district => {
-                const button = document.createElement("button");
-                button.classList.add("button");
-                button.textContent = district;
-                button.onclick = () => {
-                    selectedDistrict = district;
-                    document.querySelectorAll("#district-buttons .button").forEach(btn => btn.classList.remove("selected"));
-                    button.classList.add("selected");
-                };
-                districtButtons.appendChild(button);
-            });
-        };
-
+        // 병원 데이터 포맷팅 함수
         const formatHospitalData = (hospitalString) => {
             const hospitals = hospitalString.split('\n').filter(line => line.trim() !== '');
             return hospitals.map(hospital => {
-                const [name, location] = hospital.split(', 주소: ');
-                const [address, phone] = location ? location.split(', ☎: ') : ['', ''];
+                // 데이터 구조를 정확하게 파싱
+                const nameMatch = hospital.match(/병원명: ([^,]+)/);
+                const addressMatch = hospital.match(/주소: ([^,]+)/);
+                const phoneMatch = hospital.match(/☎: ([^,]+)/);
+                const timeMatch = hospital.match(/진료시간: ([^,]+)/);
+
                 return {
-                    name: name.replace('병원명: ', ''),
-                    address: address,
-                    phone: phone
+                    name: nameMatch ? nameMatch[1] : '',
+                    address: addressMatch ? addressMatch[1] : '',
+                    phone: phoneMatch ? phoneMatch[1] : '',
+                    time: timeMatch ? timeMatch[1] : ''
                 };
             });
         };
 
-        const fetchHospitals = () => {
-            const department = document.getElementById("department-dropdown").value;
-            if (!selectedCity || !selectedDistrict || !department) {
-                alert("모든 항목을 선택해주세요!");
-                return;
-            }
-
+        // 병원 검색 함수   
+        const fetchHospitals = (city, district, department) => {
             fetch("/recommend", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {
+                    "Content-Type": "application/json"
+                },
                 body: JSON.stringify({
-                    city: selectedCity,
-                    district: selectedDistrict,
+                    city: city,
+                    district: district,
                     medical_department: department,
                     pageNo: currentPage
                 })
@@ -320,14 +495,18 @@
                 const hospitals = formatHospitalData(data.response);
                 const hospitalListHTML = hospitals.map(hospital => `
                     <div class="hospital-item">
-                        <div class="hospital-name">${hospital.name}</div>
-                        <div class="hospital-address">📍 ${hospital.address}</div>
-                        <div class="hospital-phone">📞 ${hospital.phone}</div>
+                        <div class="hospital-header">
+                            <div class="hospital-name">${hospital.name}</div>
+                            ${hospital.time ? `<div class="hospital-time">⏰ 진료 시작 시간 : ${hospital.time}</div>` : ''}
+                        </div>
+                        ${hospital.address ? `<div class="hospital-address">📍 ${hospital.address}</div>` : ''}
+                        ${hospital.phone ? `<div class="hospital-phone">📞 ${hospital.phone}</div>` : ''}
                     </div>
                 `).join('');
+                
                 resultDiv.innerHTML = hospitalListHTML;
 
-                // 페이지 버튼 상태 업데이트
+                // 페이지네이션 버튼 상태 업데이트
                 document.getElementById("prev-button").disabled = currentPage === 1;
                 document.getElementById("next-button").disabled = hospitals.length === 0;
             })
@@ -337,22 +516,197 @@
             });
         };
 
-        document.getElementById("search-button").addEventListener("click", () => {
-            currentPage = 1;
-            fetchHospitals();
-        });
+        // DOM이 로드된 후 실행되는 메인 함수
+        document.addEventListener('DOMContentLoaded', function() {
+            // small-box1 (도시 선택) 내부 구성
+            const cityBox = document.querySelector('.small-box1');
+            cityBox.innerHTML = `
+                <div class="group-706">
+                    <div class="rectangle-880"></div>
+                    <div class="div">도시 선택</div>
+                    <div class="rectangle-888">
+                        <img class="vector" src="static/check.png" alt="check icon" />
+                    </div>
+                </div>
+                <div id="city-buttons" class="button-grid city-grid"></div>
+            `;
 
-        document.getElementById("prev-button").addEventListener("click", () => {
-            if (currentPage > 1) {
-                currentPage--;
-                fetchHospitals();
-            }
-        });
+            // small-box2 (시/군/구 선택) 내부 구성
+            const districtBox = document.querySelector('.small-box2');
+            districtBox.innerHTML = `
+                <div class="group-706">
+                    <div class="rectangle-880"></div>
+                    <div class="div">시/군/구 선택</div>
+                    <div class="rectangle-888">
+                        <img class="vector" src="static/check.png" alt="check icon" />
+                    </div>
+                </div>
+                <div id="district-buttons" class="button-grid district-grid"></div>
+            `;
 
-        document.getElementById("next-button").addEventListener("click", () => {
-            currentPage++;
-            fetchHospitals();
+            // small-box3 (진료과목 선택) 내부 구성
+            const departmentBox = document.querySelector('.small-box3');
+            departmentBox.innerHTML = `
+                <div class="group-706">
+                    <div class="rectangle-880"></div>
+                    <div class="div">진료과목 선택</div>
+                    <div class="rectangle-888">
+                        <img class="vector" src="static/check.png" alt="check icon" />
+                    </div>
+                </div>
+                <div id="department-buttons" class="button-grid department-grid"></div>
+            `;
+
+            // 도시 버튼 생성
+            const cityButtons = document.getElementById("city-buttons");
+            Object.keys(districtData).forEach(city => {
+                const div = document.createElement("div");
+                div.classList.add("list-item");
+                div.textContent = city;
+                div.onclick = () => {
+                    selectedCity = city;
+                    document.querySelectorAll("#city-buttons .list-item").forEach(item => 
+                        item.classList.remove("selected"));
+                    div.classList.add("selected");
+                    const cityCheckBox = document.querySelector('.small-box1 .rectangle-888');
+                    if (cityCheckBox) {
+                        cityCheckBox.style.backgroundColor = '#2A60FF';
+                        cityCheckBox.style.borderColor = '#2A60FF';
+                        const checkIcon = cityCheckBox.querySelector('.vector');
+                        if (checkIcon) {
+                            checkIcon.style.filter = 'brightness(0) invert(1)'; // 아이콘을 흰색으로 변경
+                        }
+                    }
+                    showDistrictButtons(city);
+                };
+                cityButtons.appendChild(div);
+            });
+
+            // 시/군/구 목록 표시 함수
+            const showDistrictButtons = (city) => {
+                const districtButtons = document.getElementById("district-buttons");
+                districtButtons.innerHTML = "";
+                districtData[city].forEach(district => {
+                    const div = document.createElement("div");
+                    div.classList.add("list-item");
+                    div.textContent = district;
+                    div.onclick = () => {
+                        selectedDistrict = district;
+                        document.querySelectorAll("#district-buttons .list-item").forEach(item => 
+                            item.classList.remove("selected"));
+                        div.classList.add("selected");
+                        const districtCheckBox = document.querySelector('.small-box2 .rectangle-888');
+                        if (districtCheckBox) {
+                            districtCheckBox.style.backgroundColor = '#2A60FF';
+                            districtCheckBox.style.borderColor = '#2A60FF';
+                            const checkIcon = districtCheckBox.querySelector('.vector');
+                            if (checkIcon) {
+                                checkIcon.style.filter = 'brightness(0) invert(1)';
+                            }
+                        }
+                    };
+                    districtButtons.appendChild(div);
+                });
+            };
+
+            // 진료과목 버튼 생성
+            const departmentButtons = document.getElementById("department-buttons");
+            Object.keys(DEPARTMENT_CODE_MAP).forEach(dept => {
+                const div = document.createElement("div");
+                div.classList.add("list-item");
+                div.textContent = dept;
+                div.onclick = () => {
+                    selectedDepartment = dept;
+                    document.querySelectorAll("#department-buttons .list-item").forEach(item => 
+                        item.classList.remove("selected"));
+                    div.classList.add("selected");
+                    const deptCheckBox = document.querySelector('.small-box3 .rectangle-888');
+                    if (deptCheckBox) {
+                        deptCheckBox.style.backgroundColor = '#2A60FF';
+                        deptCheckBox.style.borderColor = '#2A60FF';
+                        const checkIcon = deptCheckBox.querySelector('.vector');
+                        if (checkIcon) {
+                            checkIcon.style.filter = 'brightness(0) invert(1)';
+                        }
+                    }
+                };
+                departmentButtons.appendChild(div);
+            });
+
+            // 검색 버튼 생성 및 추가
+            const searchButton = document.createElement('button');
+            searchButton.id = 'search-button';
+            searchButton.classList.add('search-button');
+            searchButton.textContent = '검색';
+            document.querySelector('.blue-box').after(searchButton);
+
+            // title section과 결과 컨테이너는 검색 버튼 클릭 이벤트 안으로 이동
+            searchButton.addEventListener('click', () => {
+                if (!selectedCity || !selectedDistrict || !selectedDepartment) {
+                    alert('모든 항목을 선택해주세요.');
+                    return;
+                }
+
+                // 기존 결과 제거
+                const existingTitle = document.querySelector('.result-title-section');
+                const existingResults = document.getElementById('result-container');
+                if (existingTitle) existingTitle.remove();
+                if (existingResults) existingResults.remove();
+
+                // 새로운 title section 생성
+                const titleSection = document.createElement('section');
+                titleSection.classList.add('title-section', 'result-title-section');
+                titleSection.innerHTML = `
+                    <div style="height: 40px;"></div>
+                    <h2 class="service-title">검색된 병원을 확인해보세요</h2>
+                    <div style="height: 10px;"></div>
+                    <div class="blue-bar"></div>
+                `;
+                searchButton.after(titleSection);
+
+                // 새로운 결과 컨테이너 생성
+                const resultContainer = document.createElement('div');
+                resultContainer.id = 'result-container';
+                resultContainer.classList.add('result-container');
+                resultContainer.innerHTML = `
+                    <div id="hospital-list"></div>
+                    <div class="pagination">
+                        <button id="prev-button" disabled>이전</button>
+                        <button id="next-button">다음</button>
+                    </div>
+                `;
+                titleSection.after(resultContainer);
+
+                // 페이지네이션 버튼 이벤트 리스너 다시 추가
+                document.getElementById("prev-button").addEventListener("click", () => {
+                    if (currentPage > 1) {
+                        currentPage--;
+                        fetchHospitals(selectedCity, selectedDistrict, selectedDepartment);
+                    }
+                });
+
+                document.getElementById("next-button").addEventListener("click", () => {
+                    currentPage++;
+                    fetchHospitals(selectedCity, selectedDistrict, selectedDepartment);
+                });
+
+                currentPage = 1;
+                fetchHospitals(selectedCity, selectedDistrict, selectedDepartment);
+            });
+
+            // 페이지네이션 버튼 이벤트 리스너
+            document.getElementById("prev-button").addEventListener("click", () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    fetchHospitals(selectedCity, selectedDistrict, selectedDepartment);
+                }
+            });
+
+            document.getElementById("next-button").addEventListener("click", () => {
+                currentPage++;
+                fetchHospitals(selectedCity, selectedDistrict, selectedDepartment);
+            });
         });
-        </script>
-    </body>
+    </script>
+</body>
 </html>

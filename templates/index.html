@@ -1,184 +1,376 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI 헬스케어 챗봇</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        :root {
-            --primary-color: #fee601;
-            --secondary-color: #48dbfb;
-            --background-color: #fff;
-            --text-color: #333;
-            --chat-bubble-user: #fee601;
-            --chat-bubble-bot: #ffffff;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
         }
 
         body {
-            background-color: var(--background-color);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            color: var(--text-color);
-            margin: 0;
-            padding: 0;
-            height: 100vh;
-        }
-        .navbar {
-            background-color: white !important;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            background-color: #ffffff;
+            max-width: 1920px;
+            margin: 0 auto;
         }
 
-        .navbar-brand {
-            color: #2a60ff !important;
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 21px 430px;
+            background-color: white;
+            max-width: 1920px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            color: #0052CC;
+            width: 138px;
+            height: 69px;
             font-weight: bold;
         }
 
-        .nav-link {
-            color: var(--text-color) !important;
-            transition: color 0.3s ease;
+        .nav-menu {
+            display: flex;
+            gap: 30px;
         }
 
-        .nav-link:hover, .nav-link.active {
-            color: #2a60ff !important;
+        .nav-menu a {
+            text-decoration: none;
+            color: #333;
+            font-size: 18px;
+            font-weight: 500;
+            padding: 0 30px;
+            position: relative;
+            text-align: center;
         }
 
-        .chat-container {
-            background-color: #acbfd2;
-            height: 682px;
+        .nav-menu a::after {
+            content: "";
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%) scaleX(0);
+            width: 100px;
+            height: 3px;
+            background-color: #2a60ff;
+            transition: transform 0.3s ease;
+        }
+
+        .nav-menu a:hover::after {
+            transform: translateX(-50%) scaleX(1);
+        }
+
+        .main-banner {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #ffffff;
+            padding: 40px 0;
+            overflow: hidden;
+        }
+
+        .banner-container {
+            position: relative;
+            width: 1040px;
+            height: 550px;
+        }
+
+        .banner-image {
+            position: absolute;
+            width: 1040px;
+            height: 550px;
+            object-fit: cover;
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+        }
+
+        .banner-image.active {
+            opacity: 1;
+        }
+
+        .chat-section {
+            max-width: 1040px;
+            margin: 40px auto;
+            padding: 0px;
+        }
+
+        .chat-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #000;
+            margin-bottom: 20px;
+            text-align: left;
+            line-height: 1.5;
+        }
+
+        .blue-bar {
+            background: #2a60ff;
+            border-radius: 0px 180.5px 180.5px 0px;
+            height: 4px;
+            width: 446px;
+            margin-bottom: 20px;
+        }
+
+        .gray-bar {
+            background: #efefef;
+            height: 1px;
+            position: relative;
+        }
+
+        .chat-box {
+            width: 1040px;
+            height: 700px;
+            background: #eff3ff;
+            padding: 15px;
             display: flex;
             flex-direction: column;
+            gap: 10px;
+            overflow: hidden;
+
         }
 
         .chat-content {
             flex: 1;
             overflow-y: auto;
-            padding: 20px;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 8px;
+            padding-right: 10px;
         }
 
         .chat-message {
-            color: #000000;
-            max-width: 60%;
-            padding: 10px 15px;
-            margin: 8px;
-            border-radius: 15px;
-            word-break: break-word;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            max-width: 80%;
+            padding: 12px 15px;
+            border-radius: 5px;
+            font-size: 16px;
+            line-height: 1.5;
+            white-space: pre-line;
+        }
+
+        .chat-message.bot {
+            background-color: #ffffff;
+            color: #000;
+            border: 1px solid #d6e4ff;
+            align-self: flex-start;
+            margin-left: 45px; 
+            position: relative;
         }
 
         .chat-message.user {
-            background-color: var(--chat-bubble-user);
-            margin-left: auto;
-            float: right;
-            border-top-right-radius: 5px;
+            background-color: #ABBFFF;
+            color: #000;
+            align-self: flex-end;
             text-align: left;
         }
-        .chat-message.bot {
-            background-color: var(--chat-bubble-bot);
-            margin-right: auto;
-            border-top-left-radius: 5px;
+
+        .message-icon {
+            width: 35px;
+            height: 35px;
+            position: absolute;
+            left: -45px;
         }
 
         .chat-input-container {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            padding: 10px 15px;
-            background-color: #fff;
-            border-top: 1px solid #ddd;
+            border-top: 1px solid #d6e4ff;
+            padding-top: 10px;
         }
 
-        .chat-input-form {
-            display: flex;
-            gap: 10px;
-            max-width: 850px;
-            margin: 0 auto;
-            padding: 0 15px;
-        }
-
-        .chat-input-form input {
-            border-radius: 20px;
-            padding: 10px 15px;
-            flex: 1;
-            background-color: #efefef;
-        }
-
-        .btn-send {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            padding: 0;
+        .chat-input-wrapper {
+            position: relative;
             display: flex;
             align-items: center;
-            justify-content: center;
-            background-color: var(--primary-color);
-            color: #333;
+            background-color: #fff;
+            border: 1px solid #d6e4ff;
+            border-radius: 30px;
+            height: 50px;
+            padding: 0 10px;
         }
-</style>
+
+        .chat-ai-icon {
+            width: 30px;
+            height: 30px;
+            margin-right: 10px;
+        }
+
+        .chat-input {
+            flex: 1;
+            border: none;
+            outline: none;
+            font-size: 16px;
+            color: #000;
+            padding: 10px 0;
+        }
+
+        .chat-input::placeholder {
+            color: #8c8c8c;
+        }
+
+        .chat-submit-btn {
+            background-color: #2a60ff;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .chat-submit-btn:hover {
+            background-color: #1f4dcc;
+        }
+
+        .service-section {
+            max-width: 1040px;
+            margin: 0 auto;
+        }
+
+        .service-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .service-banners {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .service-banners img {
+            width: 510px;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .footer {
+            background: #f6f6f6;
+            padding: 20px 120px;
+            margin-top: 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #666;
+            font-size: 14px;
+            position: relative;
+        }
+
+        .footer-logo {
+            flex-shrink: 0;
+        }
+
+        .footer-info {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: left;
+            line-height: 1.5;
+        }
+
+        
+    </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-light">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="/">AI 헬스케어</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav">
-                    <li class="nav-item">
-                        <a class="nav-link" href="/">홈</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/location_selection">병원 검색</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/drug_information">의약품 정보</a>
-                    </li>
-                </ul>
-            </div>
+    <header class="header">
+        <div class="logo">
+            <a href="/">
+                <img src="static/logo.png" alt="AI 헬스케어 로고" style="height: 69px;">
+            </a>
         </div>
-    </nav>
-
-    <div class="container my-4">
-        <div class="row justify-content-center">
-            <div class="col-md-8">
-                <div class="card">
-                    <div class="card-body"style="background-color: #acbfd2;">
-                        <h5 class="card-title text-center mb-4">AI 헬스케어 챗봇</h5>
-                        <div class="chat-container">
-                            <div class="chat-content" id="chat-box">
-                                <!-- 대화 내용이 이곳에 추가됩니다 -->
-                            </div>
-                            <div class="chat-input-container">
-                                <form id="chat-form" class="chat-input-form">
-                                    <input type="text" id="message" name="message" class="form-control" placeholder="메시지 입력" required>
-                                    <button type="submit" class="btn btn-send">
-                                        <span class="send-text">🡹</span>
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <nav class="nav-menu">
+            <a href="/introduction">AIHC소개</a>
+            <a href="/location_selection">병원 찾기</a>
+            <a href="/drug_information">의약품 정보</a>
+        </nav>
+    </header>
+    <div class="gray-bar"></div>
+    <div class="main-banner">
+        <div class="banner-container">
+            <img src="static/main_banner.jpg" alt="main" class="banner-image active">
+            <img src="static/main_banner_2.jpg" alt="main" class="banner-image">
         </div>
     </div>
+    <section class="chat-section">
+        <h2 class="chat-title">챗봇에게<br>지금 당신의 상태를 진단해보세요</h2>
+        <div class="blue-bar"></div>
+        <div class="chat-box">
+            <!-- 대화 내용 -->
+            <div class="chat-content" id="chat-box">
+                <div class="chat-message bot">
+                    <img src="static/ai.png" alt="AI 아이콘" class="message-icon">
+                    <span>안녕하세요! 저는 AI 헬스케어 챗봇입니다. 궁금한 점을 말씀해주세요!</span>
+                </div>
+            </div>
+            <!-- 입력 칸 -->
+            <form class="chat-input-container">
+                <div class="chat-input-wrapper">
+                    <img src="static/ai.png" alt="AI 아이콘" class="chat-ai-icon">
+                    <input type="text" class="chat-input" placeholder="챗봇에게 지금의 상태를 말해주세요!" required>
+                    <button type="submit" class="chat-submit-btn">➤</button>
+                </div>
+            </form>
+        </div>
+    </section>
+    <div style="height: 40px;"></div>
+    <section class="service-section">
+        <h2 class="service-title">AIHC가 제공하는 서비스를 만나보세요</h2>
+        <div class="blue-bar"></div>
+        <div class="service-banners">
+            <a href="/location_selection">
+                <img src="static/move_banner1.jpg" alt="병원 찾기" style="cursor: pointer;"/>
+            </a>
+            <a href="/drug_information">
+                <img src="static/move_banner2.jpg" alt="의약품 정보" style="cursor: pointer;"/>
+            </a>
+        </div>
+    </section>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
+    <footer class="footer">
+        <div class="footer-logo">
+            <a href="/">
+                <img src="static/logo.png" alt="AI 헬스케어 로고" style="height: 69px;">
+            </a>
+        </div>
+        <div class="footer-info">
+            <p>Projecter : 여성원</p>
+            <p>Project_name : AI 헬스케어 &emsp; &emsp; E-mail : aqwo6333@naver.com &emsp; &emsp; PH : 010-3807-7762 &emsp; &emsp; By.2024</p>
+        </div>
+    </footer>
+
     <script>
-        document.getElementById("chat-form").addEventListener("submit", function(event) {
+        document.querySelector(".chat-input-container").addEventListener("submit", function(event) {
             event.preventDefault();
-            const message = document.getElementById("message").value.trim();
-            if (message === "") return;
 
-            const chatBox = document.getElementById("chat-box");
-            const userMessage = document.createElement("div");
-            userMessage.className = "chat-message user";
-            userMessage.innerText = message;
-            chatBox.appendChild(userMessage);
-            document.getElementById("message").value = "";
+            const inputField = document.querySelector(".chat-input");
+            const message = inputField.value.trim();
+
+            if (message === "") return; // 빈 입력 방지
+
+            const chatBox = document.querySelector(".chat-content");
+
+            // 사용자 메시지 추가
+            const userMessageDiv = document.createElement("div");
+            userMessageDiv.className = "chat-message user";
+            userMessageDiv.textContent = message;
+            chatBox.appendChild(userMessageDiv);
+
+            inputField.value = ""; // 입력 초기화
 
             fetch("/chat", {
                 method: "POST",
@@ -190,22 +382,45 @@
             .then(response => response.json())
             .then(data => {
                 if (data.redirect) {
-                    window.location.href = data.redirect;
+                    // 리다이렉트가 필요한 경우
+                    window.location.href = data.url;
                 } else {
-                    const botMessage = document.createElement("div");
-                    botMessage.className = "chat-message bot";
-                    botMessage.innerText = data.response;
-                    chatBox.appendChild(botMessage);
+                    // 일반 응답인 경우
+                    const botMessageDiv = document.createElement("div");
+                    botMessageDiv.className = "chat-message bot";
+
+                    const botIcon = document.createElement("img");
+                    botIcon.src = "static/ai.png";
+                    botIcon.className = "message-icon";
+                    botMessageDiv.appendChild(botIcon);
+
+                    const botText = document.createElement("span");
+                    botText.textContent = data.response;
+                    botMessageDiv.appendChild(botText);
+
+                    chatBox.appendChild(botMessageDiv);
                     chatBox.scrollTop = chatBox.scrollHeight;
                 }
             })
             .catch(error => {
                 console.error("Error:", error);
-                const errorMessage = document.createElement("div");
-                errorMessage.className = "chat-message bot text-danger";
-                errorMessage.innerText = "오류가 발생했습니다. 다시 시도해 주세요.";
-                chatBox.appendChild(errorMessage);
+
+                const errorDiv = document.createElement("div");
+                errorDiv.className = "chat-message bot";
+                errorDiv.textContent = "오류가 발생했습니다. 다시 시도해 주세요.";
+                chatBox.appendChild(errorDiv);
             });
+        });
+        document.addEventListener('DOMContentLoaded', function() {
+            const bannerImages = document.querySelectorAll('.banner-image');
+            let currentImageIndex = 0;
+
+            function switchImage() {
+                bannerImages[currentImageIndex].classList.remove('active');
+                currentImageIndex = (currentImageIndex + 1) % bannerImages.length;
+                bannerImages[currentImageIndex].classList.add('active');
+            }
+            setInterval(switchImage, 5000);
         });
     </script>
 </body>

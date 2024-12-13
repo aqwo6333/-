@@ -42,7 +42,7 @@ def save_to_csv(data, filename):
 
 # 실행
 def main():
-    api_key = "B6RhyQU2mn5MQ4o8aE1gHyxHfj7UMiErPkAwm2Dn3Q9iTmVyDpUuXQ1Z8VtY2DzTMuFTCHfaddbzkm52b2mQ3w=="
+    api_key = "YOUR_CODEMST_API_KEY"
 
     # D000 (진료과목) 데이터 가져오기
     print("D000 (진료과목) 데이터를 가져오는 중...")

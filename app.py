@@ -1,14 +1,14 @@
-from flask import Flask, request, jsonify, render_template, redirect, url_for, session
+from flask import Flask, request, jsonify, render_template, url_for, session
 import openai
 import requests
 import xml.etree.ElementTree as ET
 
 app = Flask(__name__)
 
-openai.api_key = "Your_Openai_api_key"
-DRUG_API_KEY = "Your_Drug_api_key"
+openai.api_key = "YOUR_OPENAI_API_KEY"
+DRUG_API_KEY = "YOUR_DRUG_API_KEY"
 DRUG_API_URL = "http://apis.data.go.kr/1471000/DrbEasyDrugInfoService/getDrbEasyDrugList"
-HOSPITAL_API_KEY = "Your_Hospital_api_key"
+HOSPITAL_API_KEY = "YOUR_HOSPITAL_API_KEY"
 HOSPITAL_API_URL = "http://apis.data.go.kr/B552657/HsptlAsembySearchService/getHsptlMdcncListInfoInqire"
 
 DEPARTMENT_CODE_MAP = {
@@ -65,7 +65,7 @@ def chat():
     openai_response = chat_with_openai(
         f"사용자가 '{user_input}'이라고 말했습니다. 증상에 맞는 진료과목을 추천하고, 필요한 경우 권장되는 행동과 약을 추천해 주세요."
     )
-    if any(greeting in user_input.lower() for greeting in ["안녕", "반가워", "고마워"]):
+    if any(greeting in user_input.lower() for greeting in ["안녕", "반가워", "하이", "헬로", "ㅎㅇ"]):
         response_text = "안녕하세요! 무엇을 도와드릴까요? 증상이 있으면 말씀해 주세요."
     else:
         response_text = openai_response
@@ -73,7 +73,10 @@ def chat():
     response_text += "\n\n근처 관련 병원을 조회하시겠어요? (예 / 아니오)"
     # 사용자가 "예"라고 입력한 경우 location_selection으로 이동
     if user_input.strip().lower() == "예":
-        return jsonify({"redirect": url_for("location_selection")})
+        return jsonify({
+            "redirect": True,
+            "url": "/location_selection"
+        })
     # 최종 응답 반환
     return jsonify({"response": response_text})
 
@@ -105,10 +108,20 @@ def fetch_hospital_info(city, district, department_name, page_no=1):
 
         hospital_info = []
         for item in items:
-            duty_name = item.find("dutyName").text if item.find("dutyName") is not None else "정보 없음"
-            duty_addr = item.find("dutyAddr").text if item.find("dutyAddr") is not None else "정보 없음"
-            duty_tel = item.find("dutyTel1").text if item.find("dutyTel1") is not None else "정보 없음"
-            hospital_info.append(f"병원명: {duty_name}, 주소: {duty_addr}, ☎: {duty_tel}")
+                    duty_name = item.find("dutyName").text if item.find("dutyName") is not None else "정보 없음"
+                    duty_addr = item.find("dutyAddr").text if item.find("dutyAddr") is not None else "정보 없음"
+                    duty_tel = item.find("dutyTel1").text if item.find("dutyTel1") is not None else "정보 없음"
+                    duty_time = item.find("dutyTime1s").text if item.find("dutyTime1s") is not None else ""
+                    
+                    info_string = f"병원명: {duty_name}"
+                    if duty_addr != "정보 없음":
+                        info_string += f", 주소: {duty_addr}"
+                    if duty_tel != "정보 없음":
+                        info_string += f", ☎: {duty_tel}"
+                    if duty_time:
+                        info_string += f", 진료시간: {duty_time}"
+                    
+                    hospital_info.append(info_string)
 
         return "\n".join(hospital_info)
     except Exception as e:
@@ -132,7 +145,7 @@ def recommend():
 # location_selection 페이지 경로 설정
 @app.route("/location_selection", methods=["GET", "POST"])
 def location_selection():
-    return render_template("location_selection.html", all_departments=DEPARTMENT_CODE_MAP)
+    return render_template("location_selection.html", departments=DEPARTMENT_CODE_MAP)
 
 @app.route("/save_departments", methods=["POST"])
 def save_departments():
@@ -146,6 +159,10 @@ def save_departments():
 def drug_information():
     return render_template("drug_information.html")
 
+@app.route("/introduction")
+def introduction():
+    return render_template("introduction.html")
+
 @app.route("/search_drug", methods=["POST"])
 def search_drug():
     data = request.json
@@ -153,6 +170,7 @@ def search_drug():
     
     if not drug_name:
         return jsonify({"error": "의약품 이름을 입력해주세요."})
+
     try:
         params = {
             "serviceKey": DRUG_API_KEY,
