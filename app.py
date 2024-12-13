@@ -5,6 +5,7 @@ import xml.etree.ElementTree as ET
 
 app = Flask(__name__)
 
+
 openai.api_key = "YOUR_OPENAI_API_KEY"
 DRUG_API_KEY = "YOUR_DRUG_API_KEY"
 DRUG_API_URL = "http://apis.data.go.kr/1471000/DrbEasyDrugInfoService/getDrbEasyDrugList"
