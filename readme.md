@@ -40,7 +40,24 @@
 ---
 
 ## 🚀 설치 및 실행 방법
-1. 이 프로젝트를 클론합니다.
+
+1. **Python 설치**
+   이 프로젝트를 실행하려면 Python 3.9 이상이 필요합니다.  
+   [Python 공식 웹사이트](https://www.python.org/downloads/)에서 Python을 다운로드하고 설치하세요.  
+   설치 중에 **"Add Python to PATH"** 옵션을 반드시 선택하세요.
+
+2. **OpenAI 및 Flask 설치**  
+   VSCode의 터미널(또는 명령 프롬프트)을 열고 다음 명령어를 실행합니다:
    ```bash
-   git clone https://github.com/username/project-name.git
-   cd project-name
+   pip install openai==0.28
+   pip install flask
+
+3. **프로젝트 실행**
+   프로젝트 디렉토리로 이동한 다음에 프로젝트를 실행합니다.
+   ```bash
+   python app.py
+
+   ![주소](path/link.png) 
+   사진과 같이 주소가 나오면 ctrl + 클릭 을 해서 웹페이지로 이동합니다.
+
+
