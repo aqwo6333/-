@@ -73,4 +73,5 @@
    Ex. 
    ![챗봇예시](path/chatbot_ex.png) 
 
+   ![병원선택예시](path/hospital.png)
 
