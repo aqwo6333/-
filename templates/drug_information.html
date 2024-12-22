@@ -387,70 +387,77 @@
     </footer>
 
     <script>
-        document.getElementById("drug-form").addEventListener("submit", function(event) {
-        event.preventDefault();
+    // 약 검색 폼의 제출 이벤트 리스너 등록
+    document.getElementById("drug-form").addEventListener("submit", function(event) {
+        event.preventDefault(); // 폼 기본 동작(페이지 리로드)을 방지
 
+        // 사용자 입력값을 가져오고, 공백 제거
         const drugName = document.getElementById("drugName").value.trim();
-        if (!drugName) return;
+        if (!drugName) return; // 약 이름이 입력되지 않았다면 함수 종료
 
+        // 검색 결과를 표시할 div 요소 가져오기
         const resultDiv = document.getElementById("drug-result");
-        resultDiv.style.display = "block";
-        
-        // 검색 중일 때도 동일한 구조 유지
+        resultDiv.style.display = "block"; // 결과 div를 화면에 표시
+
+        // 검색 중인 상태를 사용자에게 보여줌
         resultDiv.innerHTML = `
-            <img class="image" src="static/result-box.png" />
-            <div class="div">검색 결과</div>
-            <div class="rectangle-922"></div>
-            <div class="div2">검색 중...</div>
+            <img class="image" src="static/result-box.png" /> <!-- 결과 섹션 배경 이미지 -->
+            <div class="div">검색 결과</div> <!-- 결과 섹션 제목 -->
+            <div class="rectangle-922"></div> <!-- 시각적 장식 요소 -->
+            <div class="div2">검색 중...</div> <!-- 상태 메시지 -->
             <div class="result-content">
-                <p>검색 중입니다...</p>
+                <p>검색 중입니다...</p> <!-- 상세 상태 설명 -->
             </div>
         `;
 
+        // 약 검색 API 호출
         fetch("/search_drug", {
-            method: "POST",
+            method: "POST", // HTTP POST 요청
             headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json" // 요청 데이터 형식 JSON
             },
-            body: JSON.stringify({ drugName: drugName })
+            body: JSON.stringify({ drugName: drugName }) // 요청 데이터에 약 이름 포함
         })
-        .then(response => response.json())
+        .then(response => response.json()) // 서버 응답을 JSON으로 파싱
         .then(data => {
+            // 서버 응답에 오류 메시지가 포함된 경우
             if (data.error) {
                 resultDiv.innerHTML = `
-                    <img class="image" src="static/result-box.png" />
-                    <div class="div">검색 결과</div>
-                    <div class="rectangle-922"></div>
-                    <div class="div2">오류</div>
+                    <img class="image" src="static/result-box.png" /> <!-- 결과 섹션 배경 이미지 -->
+                    <div class="div">검색 결과</div> <!-- 결과 섹션 제목 -->
+                    <div class="rectangle-922"></div> <!-- 시각적 장식 요소 -->
+                    <div class="div2">오류</div> <!-- 오류 상태 메시지 -->
                     <div class="result-content">
-                        <p class="text-danger">${data.error}</p>
+                        <p class="text-danger">${data.error}</p> <!-- 서버에서 제공한 오류 메시지 표시 -->
                     </div>
                 `;
             } else {
+                // 검색 결과를 정상적으로 받아온 경우
                 resultDiv.innerHTML = `
-                    <img class="image" src="static/result-box.png" />
-                    <div class="div">검색 결과</div>
-                    <div class="rectangle-922"></div>
-                    <div class="div2">${data.itemName}</div>
+                    <img class="image" src="static/result-box.png" /> <!-- 결과 섹션 배경 이미지 -->
+                    <div class="div">검색 결과</div> <!-- 결과 섹션 제목 -->
+                    <div class="rectangle-922"></div> <!-- 시각적 장식 요소 -->
+                    <div class="div2">${data.itemName}</div> <!-- 검색된 약 이름 표시 -->
                     <div class="result-content">
-                        <p><strong>효능:</strong> ${data.efcyQesitm}</p>
-                        <p><strong>사용법:</strong> ${data.useMethodQesitm}</p>
-                        <p><strong>주의사항:</strong> ${data.atpnQesitm}</p>
-                        <p><strong>부작용:</strong> ${data.seQesitm}</p>
-                        <p><strong>보관법:</strong> ${data.depositMethodQesitm}</p>
+                        <p><strong>효능:</strong> ${data.efcyQesitm}</p> <!-- 약의 효능 -->
+                        <p><strong>사용법:</strong> ${data.useMethodQesitm}</p> <!-- 약의 사용 방법 -->
+                        <p><strong>주의사항:</strong> ${data.atpnQesitm}</p> <!-- 약 복용 시 주의사항 -->
+                        <p><strong>부작용:</strong> ${data.seQesitm}</p> <!-- 약 복용 시 예상 부작용 -->
+                        <p><strong>보관법:</strong> ${data.depositMethodQesitm}</p> <!-- 약의 보관 방법 -->
                     </div>
                 `;
             }
         })
         .catch(error => {
-            console.error("Error:", error);
+            // 네트워크 오류 또는 서버 오류 발생 시
+            console.error("Error:", error); // 콘솔에 오류 출력
             resultDiv.innerHTML = `
-                <img class="image" src="static/result-box.png" />
-                <div class="div">검색 결과</div>
-                <div class="rectangle-922"></div>
-                <div class="div2">오류 발생</div>
+                <img class="image" src="static/result-box.png" /> <!-- 결과 섹션 배경 이미지 -->
+                <div class="div">검색 결과</div> <!-- 결과 섹션 제목 -->
+                <div class="rectangle-922"></div> <!-- 시각적 장식 요소 -->
+                <div class="div2">오류 발생</div> <!-- 오류 상태 메시지 -->
                 <div class="result-content">
-                    <p class="text-danger">오류가 발생했습니다. 다시 시도해 주세요.</p>
+                    <p class="text-danger">오류가 발생했습니다. 다시 시도해 주세요.</p> <!-- 오류 메시지 표시 -->
                 </div>
             `;
         });

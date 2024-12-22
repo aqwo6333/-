@@ -354,74 +354,84 @@
     </footer>
 
     <script>
-        document.querySelector(".chat-input-container").addEventListener("submit", function(event) {
-            event.preventDefault();
+    // 채팅 입력 폼 제출 이벤트 처리
+    document.querySelector(".chat-input-container").addEventListener("submit", function(event) {
+        event.preventDefault(); // 기본 폼 제출 동작 방지
 
-            const inputField = document.querySelector(".chat-input");
-            const message = inputField.value.trim();
+        const inputField = document.querySelector(".chat-input");
+        const message = inputField.value.trim(); // 입력 필드에서 공백을 제거한 값 가져오기
 
-            if (message === "") return; // 빈 입력 방지
+        if (message === "") return; // 빈 입력 방지
 
-            const chatBox = document.querySelector(".chat-content");
+        const chatBox = document.querySelector(".chat-content");
 
-            // 사용자 메시지 추가
-            const userMessageDiv = document.createElement("div");
-            userMessageDiv.className = "chat-message user";
-            userMessageDiv.textContent = message;
-            chatBox.appendChild(userMessageDiv);
+        // 사용자 메시지를 채팅 박스에 추가
+        const userMessageDiv = document.createElement("div");
+        userMessageDiv.className = "chat-message user"; // 사용자 메시지 스타일 지정
+        userMessageDiv.textContent = message; // 메시지 텍스트 설정
+        chatBox.appendChild(userMessageDiv); // 채팅 박스에 메시지 추가
 
-            inputField.value = ""; // 입력 초기화
+        inputField.value = ""; // 입력 필드 초기화
 
-            fetch("/chat", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({ message: message })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.redirect) {
-                    // 리다이렉트가 필요한 경우
-                    window.location.href = data.url;
-                } else {
-                    // 일반 응답인 경우
-                    const botMessageDiv = document.createElement("div");
-                    botMessageDiv.className = "chat-message bot";
+        // 서버로 메시지 전송
+        fetch("/chat", {
+            method: "POST", // HTTP POST 요청
+            headers: {
+                "Content-Type": "application/json" // JSON 데이터 전송
+            },
+            body: JSON.stringify({ message: message }) // 메시지를 JSON 형식으로 변환하여 서버로 전달
+        })
+        .then(response => response.json()) // 서버 응답을 JSON으로 파싱
+        .then(data => {
+            if (data.redirect) {
+                // 리다이렉트가 필요한 경우
+                window.location.href = data.url; // 리다이렉트 URL로 이동
+            } else {
+                // 일반 응답인 경우
+                const botMessageDiv = document.createElement("div");
+                botMessageDiv.className = "chat-message bot"; // 봇 메시지 스타일 지정
 
-                    const botIcon = document.createElement("img");
-                    botIcon.src = "static/ai.png";
-                    botIcon.className = "message-icon";
-                    botMessageDiv.appendChild(botIcon);
+                // 봇 아이콘 추가
+                const botIcon = document.createElement("img");
+                botIcon.src = "static/ai.png"; // 봇 아이콘 이미지 경로
+                botIcon.className = "message-icon"; // 봇 아이콘 스타일 지정
+                botMessageDiv.appendChild(botIcon);
 
-                    const botText = document.createElement("span");
-                    botText.textContent = data.response;
-                    botMessageDiv.appendChild(botText);
+                // 봇 텍스트 추가
+                const botText = document.createElement("span");
+                botText.textContent = data.response; // 서버에서 받은 봇 응답 설정
+                botMessageDiv.appendChild(botText);
 
-                    chatBox.appendChild(botMessageDiv);
-                    chatBox.scrollTop = chatBox.scrollHeight;
-                }
-            })
-            .catch(error => {
-                console.error("Error:", error);
-
-                const errorDiv = document.createElement("div");
-                errorDiv.className = "chat-message bot";
-                errorDiv.textContent = "오류가 발생했습니다. 다시 시도해 주세요.";
-                chatBox.appendChild(errorDiv);
-            });
-        });
-        document.addEventListener('DOMContentLoaded', function() {
-            const bannerImages = document.querySelectorAll('.banner-image');
-            let currentImageIndex = 0;
-
-            function switchImage() {
-                bannerImages[currentImageIndex].classList.remove('active');
-                currentImageIndex = (currentImageIndex + 1) % bannerImages.length;
-                bannerImages[currentImageIndex].classList.add('active');
+                chatBox.appendChild(botMessageDiv); // 채팅 박스에 봇 메시지 추가
+                chatBox.scrollTop = chatBox.scrollHeight; // 채팅 박스를 맨 아래로 스크롤
             }
-            setInterval(switchImage, 5000);
+        })
+        .catch(error => {
+            // 오류 처리
+            console.error("Error:", error);
+
+            const errorDiv = document.createElement("div");
+            errorDiv.className = "chat-message bot"; // 오류 메시지 스타일 지정
+            errorDiv.textContent = "오류가 발생했습니다. 다시 시도해 주세요."; // 오류 메시지 텍스트 설정
+            chatBox.appendChild(errorDiv); // 채팅 박스에 오류 메시지 추가
         });
+    });
+
+    // DOMContentLoaded 이벤트: HTML 문서 로드 완료 후 실행
+    document.addEventListener('DOMContentLoaded', function() {
+        const bannerImages = document.querySelectorAll('.banner-image'); // 배너 이미지 요소들 선택
+        let currentImageIndex = 0; // 현재 활성화된 이미지 인덱스
+
+        // 배너 이미지 전환 함수
+        function switchImage() {
+            bannerImages[currentImageIndex].classList.remove('active'); // 현재 이미지에서 'active' 클래스 제거
+            currentImageIndex = (currentImageIndex + 1) % bannerImages.length; // 다음 이미지 인덱스 계산 (순환)
+            bannerImages[currentImageIndex].classList.add('active'); // 새 이미지에 'active' 클래스 추가
+        }
+        
+        setInterval(switchImage, 5000); // 5초마다 배너 이미지 전환
+    });
+
     </script>
 </body>
 </html>

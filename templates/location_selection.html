@@ -420,6 +420,7 @@
         </div>
     </footer>
     <script>
+        // 도시별로 구/군 데이터를 정리한 객체
         const districtData = {
             "서울특별시": ["종로구", "중구", "용산구", "성동구", "광진구", "동대문구", "중랑구", "성북구",
                          "강북구", "도봉구", "노원구", "은평구", "서대문구", "마포구", "양천구", "강서구", 
@@ -451,68 +452,74 @@
             "제주특별자치도": ["제주시", "서귀포시"]
         };
         const DEPARTMENT_CODE_MAP = {{ departments|tojson|safe }};
-        let selectedCity = "";
-        let selectedDistrict = "";
-        let selectedDepartment = "";
-        let currentPage = 1;
+        let selectedCity = ""; // 현재 선택된 도시를 저장하는 변수
+        let selectedDistrict = ""; // 현재 선택된 구/군/시를 저장하는 변수
+        let selectedDepartment = ""; // 현재 선택된 진료과목을 저장하는 변수
+        let currentPage = 1; // 현재 페이지 번호를 저장하는 변수 (병원 검색 시 페이지네이션에 사용)
 
         // 병원 데이터 포맷팅 함수
+        // 서버에서 받은 병원 데이터를 사용자 인터페이스에서 사용하기 편한 형태로 변환
         const formatHospitalData = (hospitalString) => {
+            // 입력 데이터(문자열)를 줄 단위로 분리하고, 빈 줄은 필터링하여 제거
             const hospitals = hospitalString.split('\n').filter(line => line.trim() !== '');
+            // 병원 정보를 각 항목별로 파싱하여 객체 형태로 변환
             return hospitals.map(hospital => {
-                // 데이터 구조를 정확하게 파싱
-                const nameMatch = hospital.match(/병원명: ([^,]+)/);
-                const addressMatch = hospital.match(/주소: ([^,]+)/);
-                const phoneMatch = hospital.match(/☎: ([^,]+)/);
-                const timeMatch = hospital.match(/진료시간: ([^,]+)/);
-
+                // 정규식을 사용하여 병원명, 주소, 전화번호, 진료시간 정보를 추출
+                const nameMatch = hospital.match(/병원명: ([^,]+)/); // '병원명: '으로 시작하는 정보 추출
+                const addressMatch = hospital.match(/주소: ([^,]+)/); // '주소: '으로 시작하는 정보 추출
+                const phoneMatch = hospital.match(/☎: ([^,]+)/); // '☎: '으로 시작하는 전화번호 추출
+                const timeMatch = hospital.match(/진료시간: ([^,]+)/); // '진료시간: '으로 시작하는 정보 추출
+                // 각 정보를 객체 형태로 반환. 정보가 없는 경우 빈 문자열로 대체
                 return {
-                    name: nameMatch ? nameMatch[1] : '',
-                    address: addressMatch ? addressMatch[1] : '',
-                    phone: phoneMatch ? phoneMatch[1] : '',
-                    time: timeMatch ? timeMatch[1] : ''
+                    name: nameMatch ? nameMatch[1] : '', // 병원명
+                    address: addressMatch ? addressMatch[1] : '', // 주소
+                    phone: phoneMatch ? phoneMatch[1] : '', // 전화번호
+                    time: timeMatch ? timeMatch[1] : '' // 진료시간
                 };
             });
         };
 
         // 병원 검색 함수   
+        // 선택된 도시, 구/군/시, 진료과목, 페이지 번호를 기반으로 병원 데이터를 검색
         const fetchHospitals = (city, district, department) => {
+            // 서버로 POST 요청을 보내 병원 데이터를 요청
             fetch("/recommend", {
-                method: "POST",
+                method: "POST", // HTTP 메서드는 POST
                 headers: {
-                    "Content-Type": "application/json"
+                    "Content-Type": "application/json" // 요청 본문의 데이터 형식이 JSON임을 명시
                 },
-                body: JSON.stringify({
-                    city: city,
-                    district: district,
-                    medical_department: department,
-                    pageNo: currentPage
+                body: JSON.stringify({ // 요청 본문에 검색 조건을 포함
+                    city: city, // 선택된 도시
+                    district: district, // 선택된 구/군/시
+                    medical_department: department, // 선택된 진료과목
+                    pageNo: currentPage // 현재 페이지 번호
                 })
             })
-            .then(response => response.json())
+            .then(response => response.json()) // 응답 데이터를 JSON 형태로 변환
             .then(data => {
-                const resultDiv = document.getElementById("hospital-list");
-                const hospitals = formatHospitalData(data.response);
+                const resultDiv = document.getElementById("hospital-list"); // 병원 목록을 표시할 HTML 요소
+                const hospitals = formatHospitalData(data.response); // 응답 데이터를 포맷팅
+                // 병원 목록 데이터를 HTML 구조로 변환
                 const hospitalListHTML = hospitals.map(hospital => `
-                    <div class="hospital-item">
-                        <div class="hospital-header">
-                            <div class="hospital-name">${hospital.name}</div>
-                            ${hospital.time ? `<div class="hospital-time">⏰ 진료 시작 시간 : ${hospital.time}</div>` : ''}
+                    <div class="hospital-item"> <!-- 병원 정보 하나를 감싸는 컨테이너 -->
+                        <div class="hospital-header"> <!-- 병원 헤더 정보 -->
+                            <div class="hospital-name">${hospital.name}</div> <!-- 병원명 표시 -->
+                            ${hospital.time ? `<div class="hospital-time">⏰ 진료 시작 시간 : ${hospital.time}</div>` : ''} <!-- 진료 시간 표시 (있을 경우) -->
                         </div>
-                        ${hospital.address ? `<div class="hospital-address">📍 ${hospital.address}</div>` : ''}
-                        ${hospital.phone ? `<div class="hospital-phone">📞 ${hospital.phone}</div>` : ''}
+                        ${hospital.address ? `<div class="hospital-address">📍 ${hospital.address}</div>` : ''} <!-- 주소 표시 (있을 경우) -->
+                        ${hospital.phone ? `<div class="hospital-phone">📞 ${hospital.phone}</div>` : ''} <!-- 전화번호 표시 (있을 경우) -->
                     </div>
-                `).join('');
-                
-                resultDiv.innerHTML = hospitalListHTML;
+                `).join(''); // 각 병원 데이터를 결합하여 HTML 문자열 생성
+
+                resultDiv.innerHTML = hospitalListHTML; // 생성된 HTML을 결과 영역에 삽입
 
                 // 페이지네이션 버튼 상태 업데이트
-                document.getElementById("prev-button").disabled = currentPage === 1;
-                document.getElementById("next-button").disabled = hospitals.length === 0;
+                document.getElementById("prev-button").disabled = currentPage === 1; // 첫 번째 페이지인 경우 이전 버튼 비활성화
+                document.getElementById("next-button").disabled = hospitals.length === 0; // 검색 결과가 없는 경우 다음 버튼 비활성화
             })
             .catch(error => {
-                console.error("Error:", error);
-                alert("병원 검색 중 오류가 발생했습니다.");
+                console.error("Error:", error); // 오류 발생 시 콘솔에 출력
+                alert("병원 검색 중 오류가 발생했습니다."); // 사용자에게 오류 메시지 표시
             });
         };
 
@@ -560,91 +567,92 @@
             // 도시 버튼 생성
             const cityButtons = document.getElementById("city-buttons");
             Object.keys(districtData).forEach(city => {
-                const div = document.createElement("div");
-                div.classList.add("list-item");
-                div.textContent = city;
+                const div = document.createElement("div"); // 각 도시를 나타내는 버튼 생성
+                div.classList.add("list-item"); // 버튼 스타일 클래스 추가
+                div.textContent = city; // 도시 이름 표시
                 div.onclick = () => {
-                    selectedCity = city;
+                    selectedCity = city; // 선택된 도시 업데이트
                     document.querySelectorAll("#city-buttons .list-item").forEach(item => 
-                        item.classList.remove("selected"));
-                    div.classList.add("selected");
+                        item.classList.remove("selected")); // 다른 버튼의 선택 상태 제거
+                    div.classList.add("selected"); // 현재 버튼 선택 상태 적용
                     const cityCheckBox = document.querySelector('.small-box1 .rectangle-888');
                     if (cityCheckBox) {
-                        cityCheckBox.style.backgroundColor = '#2A60FF';
-                        cityCheckBox.style.borderColor = '#2A60FF';
+                        cityCheckBox.style.backgroundColor = '#2A60FF'; // 체크박스 배경 색 변경
+                        cityCheckBox.style.borderColor = '#2A60FF'; // 체크박스 테두리 색 변경
                         const checkIcon = cityCheckBox.querySelector('.vector');
                         if (checkIcon) {
                             checkIcon.style.filter = 'brightness(0) invert(1)'; // 아이콘을 흰색으로 변경
                         }
                     }
-                    showDistrictButtons(city);
+                    showDistrictButtons(city); // 선택된 도시에 따라 시/군/구 버튼 표시
                 };
-                cityButtons.appendChild(div);
+                cityButtons.appendChild(div); // 도시 버튼을 DOM에 추가
             });
-
             // 시/군/구 목록 표시 함수
             const showDistrictButtons = (city) => {
                 const districtButtons = document.getElementById("district-buttons");
-                districtButtons.innerHTML = "";
+                districtButtons.innerHTML = ""; // 기존 버튼 초기화
                 districtData[city].forEach(district => {
-                    const div = document.createElement("div");
-                    div.classList.add("list-item");
-                    div.textContent = district;
+                    const div = document.createElement("div"); // 각 시/군/구를 나타내는 버튼 생성
+                    div.classList.add("list-item"); // 버튼 스타일 클래스 추가
+                    div.textContent = district; // 시/군/구 이름 표시
                     div.onclick = () => {
-                        selectedDistrict = district;
+                        selectedDistrict = district; // 선택된 시/군/구 업데이트
                         document.querySelectorAll("#district-buttons .list-item").forEach(item => 
-                            item.classList.remove("selected"));
-                        div.classList.add("selected");
+                            item.classList.remove("selected")); // 다른 버튼의 선택 상태 제거
+                        div.classList.add("selected"); // 현재 버튼 선택 상태 적용
                         const districtCheckBox = document.querySelector('.small-box2 .rectangle-888');
                         if (districtCheckBox) {
-                            districtCheckBox.style.backgroundColor = '#2A60FF';
-                            districtCheckBox.style.borderColor = '#2A60FF';
+                            districtCheckBox.style.backgroundColor = '#2A60FF'; // 체크박스 배경 색 변경
+                            districtCheckBox.style.borderColor = '#2A60FF'; // 체크박스 테두리 색 변경
                             const checkIcon = districtCheckBox.querySelector('.vector');
                             if (checkIcon) {
-                                checkIcon.style.filter = 'brightness(0) invert(1)';
+                                checkIcon.style.filter = 'brightness(0) invert(1)'; // 아이콘을 흰색으로 변경
                             }
                         }
                     };
-                    districtButtons.appendChild(div);
+                    districtButtons.appendChild(div); // 시/군/구 버튼을 DOM에 추가
                 });
             };
 
             // 진료과목 버튼 생성
-            const departmentButtons = document.getElementById("department-buttons");
+             const departmentButtons = document.getElementById("department-buttons");
             Object.keys(DEPARTMENT_CODE_MAP).forEach(dept => {
-                const div = document.createElement("div");
-                div.classList.add("list-item");
-                div.textContent = dept;
+                const div = document.createElement("div"); // 각 진료과목을 나타내는 버튼 생성
+                div.classList.add("list-item"); // 버튼 스타일 클래스 추가
+                div.textContent = dept; // 진료과목 이름 표시
                 div.onclick = () => {
-                    selectedDepartment = dept;
+                    selectedDepartment = dept; // 선택된 진료과목 업데이트
                     document.querySelectorAll("#department-buttons .list-item").forEach(item => 
-                        item.classList.remove("selected"));
-                    div.classList.add("selected");
+                        item.classList.remove("selected")); // 다른 버튼의 선택 상태 제거
+                    div.classList.add("selected"); // 현재 버튼 선택 상태 적용
                     const deptCheckBox = document.querySelector('.small-box3 .rectangle-888');
                     if (deptCheckBox) {
-                        deptCheckBox.style.backgroundColor = '#2A60FF';
-                        deptCheckBox.style.borderColor = '#2A60FF';
+                        deptCheckBox.style.backgroundColor = '#2A60FF'; // 체크박스 배경 색 변경
+                        deptCheckBox.style.borderColor = '#2A60FF'; // 체크박스 테두리 색 변경
                         const checkIcon = deptCheckBox.querySelector('.vector');
                         if (checkIcon) {
-                            checkIcon.style.filter = 'brightness(0) invert(1)';
+                            checkIcon.style.filter = 'brightness(0) invert(1)'; // 아이콘을 흰색으로 변경
                         }
                     }
                 };
-                departmentButtons.appendChild(div);
+                departmentButtons.appendChild(div); // 진료과목 버튼을 DOM에 추가
             });
 
             // 검색 버튼 생성 및 추가
-            const searchButton = document.createElement('button');
-            searchButton.id = 'search-button';
-            searchButton.classList.add('search-button');
-            searchButton.textContent = '검색';
-            document.querySelector('.blue-box').after(searchButton);
+            const searchButton = document.createElement('button'); // 검색 버튼 요소 생성
+            searchButton.id = 'search-button'; // 버튼의 ID 설정
+            searchButton.classList.add('search-button'); // 버튼 스타일 클래스 추가
+            searchButton.textContent = '검색'; // 버튼 텍스트 설정
+            document.querySelector('.blue-box').after(searchButton); // 'blue-box' 요소 뒤에 버튼 추가
+
 
             // title section과 결과 컨테이너는 검색 버튼 클릭 이벤트 안으로 이동
             searchButton.addEventListener('click', () => {
+                    // 필수 선택 항목 확인
                 if (!selectedCity || !selectedDistrict || !selectedDepartment) {
-                    alert('모든 항목을 선택해주세요.');
-                    return;
+                    alert('모든 항목을 선택해주세요.'); // 경고 메시지 출력
+                    return; // 선택되지 않은 경우 함수 종료
                 }
 
                 // 기존 결과 제거
@@ -653,7 +661,7 @@
                 if (existingTitle) existingTitle.remove();
                 if (existingResults) existingResults.remove();
 
-                // 새로운 title section 생성
+                // 새로운 제목 섹션 생성
                 const titleSection = document.createElement('section');
                 titleSection.classList.add('title-section', 'result-title-section');
                 titleSection.innerHTML = `
@@ -662,7 +670,7 @@
                     <div style="height: 10px;"></div>
                     <div class="blue-bar"></div>
                 `;
-                searchButton.after(titleSection);
+                searchButton.after(titleSection); // 검색 버튼 뒤에 섹션 추가
 
                 // 새로운 결과 컨테이너 생성
                 const resultContainer = document.createElement('div');
@@ -675,9 +683,9 @@
                         <button id="next-button">다음</button>
                     </div>
                 `;
-                titleSection.after(resultContainer);
+                titleSection.after(resultContainer); // 제목 섹션 뒤에 결과 컨테이너 추가
 
-                // 페이지네이션 버튼 이벤트 리스너 다시 추가
+                // 이전 버튼 클릭 이벤트 리스너 등록
                 document.getElementById("prev-button").addEventListener("click", () => {
                     if (currentPage > 1) {
                         currentPage--;
@@ -685,6 +693,7 @@
                     }
                 });
 
+                // 다음 버튼 클릭 이벤트 리스너 등록
                 document.getElementById("next-button").addEventListener("click", () => {
                     currentPage++;
                     fetchHospitals(selectedCity, selectedDistrict, selectedDepartment);
@@ -702,6 +711,7 @@
                 }
             });
 
+            // 페이지네이션 버튼 이벤트 리스너 추가
             document.getElementById("next-button").addEventListener("click", () => {
                 currentPage++;
                 fetchHospitals(selectedCity, selectedDistrict, selectedDepartment);

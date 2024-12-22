@@ -3,15 +3,17 @@ import openai
 import requests
 import xml.etree.ElementTree as ET
 
+# Flask 앱 초기화
 app = Flask(__name__)
 
+# API 키 및 URL 설정
+openai.api_key = "YOUR_OPENAI_API_KEY"  # OpenAI API 키
+DRUG_API_KEY = "YOUR_DRUG_API_KEY"  # 약 정보 API 키
+DRUG_API_URL = "http://apis.data.go.kr/1471000/DrbEasyDrugInfoService/getDrbEasyDrugList"  # 약 정보 API URL
+HOSPITAL_API_KEY = "YOUR_HOSPITAL_API_KEY"  # 병원 정보 API 키
+HOSPITAL_API_URL = "http://apis.data.go.kr/B552657/HsptlAsembySearchService/getHsptlMdcncListInfoInqire"  # 병원 정보 API URL
 
-openai.api_key = "YOUR_OPENAI_API_KEY"
-DRUG_API_KEY = "YOUR_DRUG_API_KEY"
-DRUG_API_URL = "http://apis.data.go.kr/1471000/DrbEasyDrugInfoService/getDrbEasyDrugList"
-HOSPITAL_API_KEY = "YOUR_HOSPITAL_API_KEY"
-HOSPITAL_API_URL = "http://apis.data.go.kr/B552657/HsptlAsembySearchService/getHsptlMdcncListInfoInqire"
-
+# 진료과목 코드 맵핑
 DEPARTMENT_CODE_MAP = {
     "내과": "D001",
     "소아청소년과": "D002",
@@ -42,7 +44,7 @@ DEPARTMENT_CODE_MAP = {
     "예방의학과": "D029"
 }
 
-# OpenAI API로 답변 생성 함수
+# OpenAI API를 통해 챗봇 응답 생성
 def chat_with_openai(user_input, model="gpt-3.5-turbo", temperature=0.7, max_tokens=500):
     try:
         response = openai.ChatCompletion.create(
@@ -54,25 +56,30 @@ def chat_with_openai(user_input, model="gpt-3.5-turbo", temperature=0.7, max_tok
             temperature=temperature,
             max_tokens=max_tokens
         )
+        # OpenAI 응답 메시지 반환
         return response['choices'][0]['message']['content']
     except Exception as e:
+        # 예외 발생 시 오류 메시지 반환
         return "증상 분석 중 오류가 발생했습니다. 다시 시도해 주세요."
 
-
+# /chat 엔드포인트: 사용자의 입력을 받아 챗봇 응답 반환
 @app.route("/chat", methods=["POST"])
 def chat():
-    user_input = request.json.get("message")
+    user_input = request.json.get("message")  # 클라이언트로부터 입력 메시지 수신
     response_text = ""
+    # OpenAI API를 사용하여 응답 생성
     openai_response = chat_with_openai(
         f"사용자가 '{user_input}'이라고 말했습니다. 증상에 맞는 진료과목을 추천하고, 필요한 경우 권장되는 행동과 약을 추천해 주세요."
     )
+    # 간단한 인사 처리
     if any(greeting in user_input.lower() for greeting in ["안녕", "반가워", "하이", "헬로", "ㅎㅇ"]):
         response_text = "안녕하세요! 무엇을 도와드릴까요? 증상이 있으면 말씀해 주세요."
     else:
         response_text = openai_response
 
+    # 병원 조회 여부 추가 메시지
     response_text += "\n\n근처 관련 병원을 조회하시겠어요? (예 / 아니오)"
-    # 사용자가 "예"라고 입력한 경우 location_selection으로 이동
+    # 사용자가 "예"라고 입력한 경우 리다이렉션
     if user_input.strip().lower() == "예":
         return jsonify({
             "redirect": True,
@@ -81,11 +88,11 @@ def chat():
     # 최종 응답 반환
     return jsonify({"response": response_text})
 
-# 진료과목 이름으로 코드 반환
+# 진료과목 이름을 코드로 변환하는 함수
 def get_department_code(department_name):
     return DEPARTMENT_CODE_MAP.get(department_name, None)
 
-# 병원 정보 조회 함수
+# 병원 정보를 API로 조회하는 함수
 def fetch_hospital_info(city, district, department_name, page_no=1):
     department_code = DEPARTMENT_CODE_MAP.get(department_name)
     if not department_code:
@@ -99,6 +106,7 @@ def fetch_hospital_info(city, district, department_name, page_no=1):
             "pageNo": page_no,  # 페이지 번호
             "numOfRows": 10,  # 페이지당 항목 수
         }
+        # API 요청
         response = requests.get(HOSPITAL_API_URL, params=params)
         response.raise_for_status()
         root = ET.fromstring(response.content)
@@ -107,67 +115,74 @@ def fetch_hospital_info(city, district, department_name, page_no=1):
         if not items:
             return "해당 지역에 대한 병원 정보를 찾을 수 없습니다."
 
+        # 병원 정보를 파싱하여 목록 생성
         hospital_info = []
         for item in items:
-                    duty_name = item.find("dutyName").text if item.find("dutyName") is not None else "정보 없음"
-                    duty_addr = item.find("dutyAddr").text if item.find("dutyAddr") is not None else "정보 없음"
-                    duty_tel = item.find("dutyTel1").text if item.find("dutyTel1") is not None else "정보 없음"
-                    duty_time = item.find("dutyTime1s").text if item.find("dutyTime1s") is not None else ""
-                    
-                    info_string = f"병원명: {duty_name}"
-                    if duty_addr != "정보 없음":
-                        info_string += f", 주소: {duty_addr}"
-                    if duty_tel != "정보 없음":
-                        info_string += f", ☎: {duty_tel}"
-                    if duty_time:
-                        info_string += f", 진료시간: {duty_time}"
-                    
-                    hospital_info.append(info_string)
+            duty_name = item.find("dutyName").text if item.find("dutyName") is not None else "정보 없음"
+            duty_addr = item.find("dutyAddr").text if item.find("dutyAddr") is not None else "정보 없음"
+            duty_tel = item.find("dutyTel1").text if item.find("dutyTel1") is not None else "정보 없음"
+            duty_time = item.find("dutyTime1s").text if item.find("dutyTime1s") is not None else ""
+            
+            info_string = f"병원명: {duty_name}"
+            if duty_addr != "정보 없음":
+                info_string += f", 주소: {duty_addr}"
+            if duty_tel != "정보 없음":
+                info_string += f", ☎: {duty_tel}"
+            if duty_time:
+                info_string += f", 진료시간: {duty_time}"
+            
+            hospital_info.append(info_string)
 
         return "\n".join(hospital_info)
     except Exception as e:
         return f"API 호출 중 오류가 발생했습니다: {str(e)}"
 
-# 추천 병원 검색 엔드포인트
+# 병원 추천 엔드포인트
 @app.route("/recommend", methods=["POST"])
 def recommend():
     data = request.json
-    city = data.get("city")
-    district = data.get("district")
-    department = data.get("medical_department")
-    page_no = data.get("pageNo", 1)
+    city = data.get("city")  # 사용자 입력 도시
+    district = data.get("district")  # 사용자 입력 지역구
+    department = data.get("medical_department")  # 사용자 입력 진료과목
+    page_no = data.get("pageNo", 1)  # 페이지 번호 (기본값 1)
 
+    # 필수 입력 항목 확인
     if not city or not district or not department:
         return jsonify({"response": "도시, 지역구, 진료과목을 모두 선택해주세요."})
 
+    # 병원 정보 조회
     hospital_info = fetch_hospital_info(city, district, department, page_no)
     return jsonify({"response": hospital_info})
 
-# location_selection 페이지 경로 설정
+# 병원 위치 선택 페이지
 @app.route("/location_selection", methods=["GET", "POST"])
 def location_selection():
     return render_template("location_selection.html", departments=DEPARTMENT_CODE_MAP)
 
+# 추천된 진료과목 저장
 @app.route("/save_departments", methods=["POST"])
 def save_departments():
-    departments = request.json.get("departments")
+    departments = request.json.get("departments")  # 클라이언트로부터 진료과목 수신
     if departments:
         session["recommended_departments"] = departments
         return jsonify({"success": True})
     return jsonify({"error": "No departments provided"})
 
+# 의약품 정보 페이지
 @app.route("/drug_information")
 def drug_information():
     return render_template("drug_information.html")
 
+# 서비스 소개 페이지
 @app.route("/introduction")
 def introduction():
     return render_template("introduction.html")
 
+# 의약품 정보 검색 엔드포인트
 @app.route("/search_drug", methods=["POST"])
 def search_drug():
     data = request.json
-    drug_name = data.get("drugName")
+    drug_name = data.get("drugName")  # 사용자 입력 의약품 이름
     
     if not drug_name:
         return jsonify({"error": "의약품 이름을 입력해주세요."})
@@ -179,6 +194,7 @@ def search_drug():
             "type": "json",
             "numOfRows": 1
         }
+        # 의약품 정보 API 요청
         response = requests.get(DRUG_API_URL, params=params)
         response.raise_for_status()
 
@@ -200,7 +216,7 @@ def search_drug():
         print(f"Error fetching drug information: {e}")
         return jsonify({"error": "의약품 정보를 가져오는 데 실패했습니다. 다시 시도해 주세요."})
 
-# 홈페이지 경로 설정
+# 홈페이지
 @app.route("/")
 def home():
     return render_template("index.html")
